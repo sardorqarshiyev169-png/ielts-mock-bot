@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ielts-mock-tma
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: WEBAPP_URL
+        sync: false
+      - key: KEEP_ALIVE
+        value: "true"
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="uz" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IELTS Computer-Delivered Mock Platform</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Font & Styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ielts: {
+              red: '#e11d48',
+              blue: '#0284c7',
+              dark: '#0f172a',
+              light: '#f8fafc',
+              accent: '#3b82f6',
+              surface: '#1e293b'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased select-none">
+
+  <!-- ==================== TOP NAVIGATION BAR ==================== -->
+  <header id="topBar" class="bg-slate-950/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-2.5 flex items-center justify-between shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow-lg shadow-rose-600/20">
+        IE
+      </div>
+      <div>
+        <h1 class="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+          <span>IELTS Mock Pro</span>
+          <span class="text-[10px] bg-rose-500/20 text-rose-400 font-semibold px-1.5 py-0.5 rounded border border-rose-500/30">CD-IELTS</span>
+        </h1>
+        <p id="candidateName" class="text-xs text-slate-400">Candidate: Dilshodbek (004812)</p>
+      </div>
+    </div>
+
+    <!-- Active Exam Timer (Hidden in Home/Admin views) -->
+    <div id="examTimerContainer" class="hidden items-center gap-3">
+      <div class="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/30 px-3 py-1 rounded-full text-rose-400 font-mono font-bold text-sm shadow-inner">
+        <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i>
+        <span id="timerDisplay">60:00</span>
+      </div>
+      <button id="btnFinishExam" onclick="confirmFinishExam()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md transition active:scale-95 flex items-center gap-1">
+        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+        <span>Tugatish</span>
+      </button>
+    </div>
+
+    <!-- Right Controls: Home Navigation / Admin / Audio status -->
+    <div id="navControls" class="flex items-center gap-2">
+      <button onclick="switchView('home')" class="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition" title="Bosh sahifa">
+        <i data-lucide="home" class="w-4 h-4"></i>
+      </button>
+      <button onclick="switchView('admin')" class="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1 text-xs font-medium" title="Admin & Materiallar">
+        <i data-lucide="folder-plus" class="w-4 h-4 text-indigo-400"></i>
+        <span class="hidden sm:inline">Materiallar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT AREA ==================== -->
+  <main class="flex-1 flex flex-col overflow-hidden relative">
+
+    <!-- VIEW 1: HOME / TEST CATALOG -->
+    <section id="viewHome" class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-5xl mx-auto w-full space-y-6">
+      <!-- Welcome Hero Banner -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900/60 via-slate-900 to-rose-950/50 border border-slate-800 p-6 shadow-2xl">
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-3 border border-indigo-500/30">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Cambridge Standarti Asosida
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            IELTS Mock Testini topshiring va haqiqiy Bandingizni aniqlang!
+          </h2>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+            British Council va IDP Computer-Delivered formati, haqiqiy audio eshitish, split-screen matn, va sun'iy intellekt orqali avtomatik tahlil.
+          </p>
+          <div class="flex flex-wrap gap-3 mt-4">
+            <button onclick="triggerAiMockGeneration()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="wand-2" class="w-4 h-4"></i>
+              <span>⚡ AI Yangi Mock Topish / Yaratish</span>
+            </button>
+            <button onclick="switchView('admin')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-700 flex items-center gap-2 transition active:scale-95">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span>Material Joylash</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Categories Filter -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+          <button onclick="filterTests('all')" class="tab-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-600 text-white transition shadow">
+            Barchasi
+          </button>
+          <button onclick="filterTests('reading')" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+            📖 Reading
+          </button>
+          <button onclick="filterTests('listening')" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+            🎧 Listening
+          </button>
+        </div>
+        <span id="testCounter" class="text-xs text-slate-400 font-medium">Yuklanmoqda...</span>
+      </div>
+
+      <!-- Test Cards Grid -->
+      <div id="testsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Dynamically injected via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 2: EXAM SCREEN (COMPUTER-DELIVERED IELTS SPLIT INTERFACE) -->
+    <section id="viewExam" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+      <!-- Section Info Banner & Audio Player -->
+      <div class="bg-slate-950 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-3">
+          <span id="examTestTitle" class="font-bold text-slate-200">Test Title</span>
+          <span class="text-slate-600">|</span>
+          <span id="examSectionIndicator" class="text-indigo-400 font-semibold">Passage 1</span>
+        </div>
+        
+        <!-- Listening Audio Player (shown only in Listening sections) -->
+        <div id="examAudioControls" class="hidden items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg">
+          <button id="btnPlayAudio" onclick="toggleAudio()" class="w-6 h-6 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition">
+            <i id="audioPlayIcon" data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          </button>
+          <audio id="examAudioPlayer" preload="auto"></audio>
+          <div class="w-32 bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div id="audioProgressBar" class="bg-indigo-500 h-full w-0 transition-all duration-200"></div>
+          </div>
+          <span id="audioTimeDisplay" class="font-mono text-[11px] text-slate-400">00:00</span>
+        </div>
+
+        <!-- Highlight & Text Tools -->
+        <div class="flex items-center gap-1.5">
+          <button onclick="highlightSelection('#fef08a')" class="px-2 py-1 bg-yellow-400/20 text-yellow-300 hover:bg-yellow-400/30 rounded border border-yellow-400/30 text-[11px] font-medium flex items-center gap-1" title="Matnni sariq bilan belgilash">
+            <span class="w-2 h-2 rounded-full bg-yellow-400"></span> Highlight
+          </button>
+          <button onclick="clearHighlights()" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded text-[11px]" title="Belgilashlarni tozalash">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Split Screen Body -->
+      <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left Pane: Passage or Listening Instructions -->
+        <div id="passagePane" class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 sm:p-6 border-b md:border-b-0 md:border-r border-slate-800 bg-slate-900/60 leading-relaxed text-sm select-text selection:bg-yellow-400/40 selection:text-white">
+          <div id="passageHeader" class="mb-4">
+            <h3 id="passageTitle" class="text-lg font-bold text-white tracking-tight">Reading Passage</h3>
+            <p id="passageSubtitle" class="text-xs text-slate-400 mt-0.5">Read the text and answer questions on the right.</p>
+          </div>
+          <div id="passageContent" class="space-y-4 text-slate-300 text-sm leading-relaxed font-sans">
+            <!-- Injected passage paragraphs -->
+          </div>
+        </div>
+
+        <!-- Right Pane: Interactive Questions -->
+        <div id="questionsPane" class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 sm:p-6 bg-slate-950 space-y-6">
+          <div id="questionsContainer" class="space-y-6">
+            <!-- Questions rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Question Palette & Navigation -->
+      <footer class="bg-slate-950 border-t border-slate-800 px-4 py-2.5 flex items-center justify-between z-30">
+        <button onclick="navigateQuestion(-1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1 transition">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i> Oldingi
+        </button>
+
+        <!-- Question Numbers Strip -->
+        <div id="questionPalette" class="flex items-center gap-1.5 overflow-x-auto max-w-[60vw] py-1 px-2 scrollbar-none">
+          <!-- Palette buttons e.g. 1, 2, 3... 40 -->
+        </div>
+
+        <button onclick="navigateQuestion(1)" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 transition">
+          Keyingi <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </footer>
+    </section>
+
+    <!-- VIEW 3: RESULTS & SCORE BREAKDOWN -->
+    <section id="viewResults" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 max-w-4xl mx-auto w-full space-y-6">
+      <div class="text-center py-6 bg-gradient-to-b from-indigo-950/50 to-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+        <div class="inline-flex items-center justify-center p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl mb-4">
+          <i data-lucide="award" class="w-10 h-10"></i>
+        </div>
+        <h2 class="text-3xl font-black text-white tracking-tight">Mock Test Yakunlandi!</h2>
+        <p class="text-slate-400 text-xs mt-1">Rasmiy Cambridge IELTS hisoblash mezonlari asosida baholandi</p>
+
+        <!-- Band Score Big Badge -->
+        <div class="my-6 inline-flex flex-col items-center justify-center bg-slate-950/80 border-2 border-indigo-500/40 rounded-3xl px-8 py-5 shadow-2xl shadow-indigo-500/20">
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Umumiy Natija</span>
+          <div class="flex items-baseline gap-1 my-1">
+            <span class="text-slate-400 text-2xl font-bold">Band</span>
+            <span id="resultBandScore" class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400 font-mono">7.5</span>
+          </div>
+          <div class="text-xs text-slate-400 font-medium mt-1">
+            To'g'ri javoblar: <span id="resultRawScore" class="font-bold text-white">9 / 10</span>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button onclick="switchView('home')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg transition">
+            Bosh Sahifaga Qaytish
+          </button>
+          <button onclick="shareResultToTelegram()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+            <span>Natijani Ulashish</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Detailed Review per Question -->
+      <div class="space-y-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="check-square" class="w-4 h-4 text-indigo-400"></i>
+          <span>Savollar Tahlili va Izohlar:</span>
+        </h3>
+        <div id="resultsDetailedList" class="space-y-3">
+          <!-- Injected results cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ADMIN PORTAL & MATERIAL FINDER / CREATOR -->
+    <section id="viewAdmin" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 max-w-4xl mx-auto w-full space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="settings" class="w-5 h-5 text-indigo-400"></i>
+            <span>IELTS Materiallar Boshqaruvi</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Yangi testlar qo'shish, AI yordamida avtomatik topish yoki matndan import qilish</p>
+        </div>
+        <button onclick="switchView('home')" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800">
+          Orqaga
+        </button>
+      </div>
+
+      <!-- Feature 1: AI Autonomous Test Finder & Generator -->
+      <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-sm text-white">⚡ AI Yangi IELTS Test Topish & Generatsiya Qilish</h3>
+            <p class="text-xs text-slate-400 mt-1">
+              Mavzuni kiriting (masalan: <i>Climate Change, History of Rome, Artificial Intelligence, Marine Biology</i>) yoki bo'sh qoldiring — tizim o'zi qidirib, to'liq 13-14 savolli akademik passage va kalitlarni yaratadi!
+            </p>
+            <div class="flex gap-2 mt-3">
+              <input id="aiTopicInput" type="text" placeholder="Ixtiyoriy mavzu (masalan: Renewable Energy)" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+              <button id="btnAiGenerate" onclick="generateWithAi()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                <span>Avto-Yaratish</span>
+              </button>
+            </div>
+            <div id="aiGenStatus" class="hidden text-xs mt-2 text-indigo-400 flex items-center gap-1.5">
+              <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i>
+              <span>AI material qidirmoqda va tayyorlamoqda...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Quick Raw Text / Cambridge Import -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-sm text-white">📋 Matndan 1 Soniyada Tezkor Import (Quick Text Import)</h3>
+            <p class="text-xs text-slate-400 mt-1">
+              Ixtiyoriy IELTS test matnini ko'chirib bu yerga tashlang. Tizim avtomatik savol va variantlarni ajratib oladi.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-[11px] text-slate-400">
+            <span>Format namunasi:</span>
+            <button onclick="insertSampleFormat()" class="text-indigo-400 hover:underline">Namunani yuklash</button>
+          </div>
+          <textarea id="rawTextInput" rows="8" placeholder="TITLE: Mening testim&#10;PASSAGE:&#10;Paragraph A...&#10;&#10;QUESTIONS:&#10;1. Savol matni?&#10;A) Variant 1&#10;B) Variant 2&#10;ANSWER: A&#10;EXPLANATION: Izoh..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <button onclick="importRawText()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Testni Darhol Saqlash</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 border border-slate-700 text-white text-xs px-4 py-2.5 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2">
+    <i id="toastIcon" data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+    <span id="toastMessage">Xabar</span>
+  </div>
+
+  <!-- App Logic -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
