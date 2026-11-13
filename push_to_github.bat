@@ -11,9 +11,7 @@ git -c safe.directory="*" branch -M main
 
 echo [1/2] GitHubga ulanish va yuklash boshlandi...
 echo.
-echo DIQQAT: Agar brauzerda oyna ochilsa, "Sign in with your browser" yoki "Authorize" tugmasini bosing!
-echo.
-git -c safe.directory="*" push -u origin main
+git -c safe.directory="*" push -u origin main --force
 
 if %errorlevel% equ 0 (
     echo.

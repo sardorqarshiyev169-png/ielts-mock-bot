@@ -11,6 +11,7 @@ let timerInterval = null;
 let secondsRemaining = 0;
 let currentQuestionIndex = 0;
 let flatQuestions = [];
+let currentSectionIndex = 0;
 
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -211,13 +212,11 @@ async function startExam(testId) {
       });
     });
 
-    // Setup Header & Passage
+    // Setup Header & Multi-Passage Tabs
     document.getElementById('examTestTitle').textContent = activeTest.title;
-    const sec1 = activeTest.sections[0] || {};
-    document.getElementById('passageTitle').textContent = sec1.title || 'Passage 1';
-    
-    // Render Passage text with formatting
-    renderPassageText(sec1.passage_text || '');
+    currentSectionIndex = 0;
+    renderPassageTabs(activeTest.sections);
+    switchPassageSection(0);
 
     // Setup Audio if Listening
     const audioControls = document.getElementById('examAudioControls');
@@ -247,6 +246,48 @@ async function startExam(testId) {
     console.error(err);
     showToast('Xatolik yuz berdi');
   }
+}
+
+function renderPassageTabs(sections) {
+  const container = document.getElementById('passageTabsContainer');
+  if (!container) return;
+  if (!sections || sections.length <= 1) {
+    container.classList.add('hidden');
+    return;
+  }
+  container.classList.remove('hidden');
+  container.innerHTML = sections.map((sec, idx) => {
+    const qNums = sec.questions.map(q => q.question_number);
+    const rangeStr = qNums.length ? `Q${Math.min(...qNums)}-${Math.max(...qNums)}` : '';
+    return `
+      <button onclick="switchPassageSection(${idx})" id="secTabBtn_${idx}" class="sec-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${idx === 0 ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+        <span>Passage ${sec.section_number}</span>
+        <span class="text-[10px] opacity-75">(${rangeStr})</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function switchPassageSection(secIdx) {
+  if (!activeTest || !activeTest.sections || !activeTest.sections[secIdx]) return;
+  currentSectionIndex = secIdx;
+  const sec = activeTest.sections[secIdx];
+
+  document.getElementById('passageTitle').textContent = sec.title || `Passage ${sec.section_number}`;
+  document.getElementById('passageSubtitle').textContent = sec.instructions || 'Read the text and answer questions on the right.';
+  const ind = document.getElementById('examSectionIndicator');
+  if (ind) ind.textContent = `Passage ${sec.section_number}`;
+
+  renderPassageText(sec.passage_text || '');
+
+  // Update tabs visual active state
+  document.querySelectorAll('.sec-tab-btn').forEach((btn, idx) => {
+    if (idx === secIdx) {
+      btn.className = 'sec-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow';
+    } else {
+      btn.className = 'sec-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700';
+    }
+  });
 }
 
 function renderPassageText(rawText) {
@@ -422,6 +463,16 @@ function updatePaletteStatus(qId) {
 function scrollToQuestion(qId, index) {
   triggerHaptic('light');
   currentQuestionIndex = index;
+
+  // Auto-switch to the corresponding passage if candidate navigates between sections
+  if (flatQuestions[index] && activeTest && activeTest.sections) {
+    const qSecId = flatQuestions[index].section_id;
+    const secIdx = activeTest.sections.findIndex(s => s.id === qSecId);
+    if (secIdx !== -1 && secIdx !== currentSectionIndex) {
+      switchPassageSection(secIdx);
+    }
+  }
+
   const card = document.getElementById(`qCard_${qId}`);
   if (card) {
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
